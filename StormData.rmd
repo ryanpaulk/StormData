@@ -1,3 +1,10 @@
+---
+title: "Population and Economic Effects of Storm Damage"
+author: "RP"
+date: "3/1/2021"
+output: html_document
+---
+``` {r, echo = FALSE, cache = TRUE, message = FALSE}
 if(!file.exists("StormData.csv.bz2")){
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "StormData.csv.bz2")
 }
@@ -6,9 +13,13 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 stormdata <- fread("StormData.csv.bz2")
+```
+# DATA PROCESSING
 
+##Question 1
+1. Across the United States, which types of events (as indicated in the \color{red}{\verb|EVTYPE|}EVTYPE variable) are most harmful with respect to population health? \Fatalities\ and \Injuries\
+```{r}
 
-#Question 1
 pophealth <- stormdata %>% select(EVTYPE, FATALITIES, INJURIES)
 ## Combine the columns and filter out the zeroes
 harmed <- pophealth %>% select(EVTYPE, FATALITIES, INJURIES) %>% mutate(HARMED = FATALITIES + INJURIES) %>% filter(HARMED != 0)
@@ -17,14 +28,26 @@ harmed <- aggregate(cbind(FATALITIES, INJURIES, HARMED) ~ EVTYPE, data = harmed,
 ## Arrange by total harmed, then by most fatalities
 harmed <- arrange(harmed, desc(HARMED, FATALITIES))
 ## Plot the top ten?
+harmed10 <- harmed[1:10,]
+harmed10
+
+```
+```{r plotting}
+ggplot(harmed10, aes(x = EVTYPE, y = INJURIES + FATALITIES)) + geom_bar(position = "stack", stat = "identity", fill = "2") + labs(title = "Effects of Storms on Population Health", x = "Storm Event", y = "Number of Victims")
+```
 #Question 2
+2. Across the United States, which types of events have the greatest economic consequences? \PropertyDamage and \CropDamage
+## Damage is in two columns: a "value" and an "exponent", where M = millions and K = thousands
+```{r}
+
 economy <- stormdata %>% select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
 ## Change letter suffixes in EXP to numeric multipliers of DMG
 economy$CROPDMGEXP <- gsub("k", "1000", economy$CROPDMGEXP, ignore.case = TRUE)
 economy$CROPDMGEXP <- gsub("m", "1000000", economy$CROPDMGEXP, ignore.case = TRUE)
 economy$PROPDMGEXP <- gsub("k", "1000", economy$PROPDMGEXP, ignore.case = TRUE)
 economy$PROPDMGEXP <- gsub("m", "1000000", economy$PROPDMGEXP, ignore.case = TRUE)
-## Found out there are some other modifiers around...
+## Noticed some other modifiers while scrolling through the data...
+## Find out what they are
 table(economy$PROPDMGEXP)
 economy$PROPDMGEXP <- gsub("h", "100", economy$PROPDMGEXP, ignore.case = TRUE)
 economy$PROPDMGEXP <- gsub("b", "1000000000", economy$PROPDMGEXP, ignore.case = TRUE)
@@ -42,3 +65,16 @@ eco <- economy %>% mutate(PROP = PROPDMG * PROPDMGEXP, CROP = CROPDMG * CROPDMGE
 ecodmg <- aggregate(cbind(PROP, CROP) ~ EVTYPE, data = eco, FUN = sum)
 ecodmg$TOTAL <- ecodmg$PROP + ecodmg$CROP
 ecodmg <- arrange(ecodmg, desc(TOTAL))
+ecodmg10 <- ecodmg[1:10,]
+ecodmg10
+```
+
+
+
+
+
+
+
+
+
+
