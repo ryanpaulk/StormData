@@ -14,12 +14,16 @@ library(data.table)
 library(ggplot2)
 stormdata <- fread("StormData.csv.bz2")
 ```
-# DATA PROCESSING
+```{r, echo = FALSE, message = FALSE}
+library(dplyr)
+library(data.table)
+library(ggplot2)
+```
+## Data Processing for Question 1:
 
-##Question 1
-1. Across the United States, which types of events (as indicated in the \color{red}{\verb|EVTYPE|}EVTYPE variable) are most harmful with respect to population health? \Fatalities\ and \Injuries\
+### Across the United States, which types of events  are most harmful with respect to population health?
+
 ```{r}
-
 pophealth <- stormdata %>% select(EVTYPE, FATALITIES, INJURIES)
 ## Combine the columns and filter out the zeroes
 harmed <- pophealth %>% select(EVTYPE, FATALITIES, INJURIES) %>% mutate(HARMED = FATALITIES + INJURIES) %>% filter(HARMED != 0)
@@ -32,14 +36,22 @@ harmed10 <- harmed[1:10,]
 harmed10
 
 ```
-```{r plotting}
-ggplot(harmed10, aes(x = EVTYPE, y = INJURIES + FATALITIES)) + geom_bar(position = "stack", stat = "identity", fill = "2") + labs(title = "Effects of Storms on Population Health", x = "Storm Event", y = "Number of Victims")
-```
-#Question 2
-2. Across the United States, which types of events have the greatest economic consequences? \PropertyDamage and \CropDamage
-## Damage is in two columns: a "value" and an "exponent", where M = millions and K = thousands
-```{r}
 
+## Results for Question 1:
+
+A bar graph showing the storm events that caused the top ten greatest about of
+injury and death to the US population.
+```{r plotting}
+ggplot(harmed10, aes(x = EVTYPE, y = INJURIES + FATALITIES)) + geom_bar(position = "stack", stat = "identity", fill = "red") + labs(title = "Effect of Storms on Population Health", x = "Storm Type", y = "Number of Victims") + theme(axis.text.x=element_text(angle=33, hjust = 1))
+```
+
+## Data Processing for Question 2:
+
+### Across the United States, which types of events have the greatest economic consequences?
+
+```{r}
+#Relevant columns are Property Damages and Crop Damages. 
+#Both Damages have two columns: one with "value" and one an "exponent", where M = millions and K = thousands
 economy <- stormdata %>% select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
 ## Change letter suffixes in EXP to numeric multipliers of DMG
 economy$CROPDMGEXP <- gsub("k", "1000", economy$CROPDMGEXP, ignore.case = TRUE)
@@ -49,6 +61,8 @@ economy$PROPDMGEXP <- gsub("m", "1000000", economy$PROPDMGEXP, ignore.case = TRU
 ## Noticed some other modifiers while scrolling through the data...
 ## Find out what they are
 table(economy$PROPDMGEXP)
+##Make them disappear
+##All weird ones are just changed to identity multiplier, "1"
 economy$PROPDMGEXP <- gsub("h", "100", economy$PROPDMGEXP, ignore.case = TRUE)
 economy$PROPDMGEXP <- gsub("b", "1000000000", economy$PROPDMGEXP, ignore.case = TRUE)
 economy$PROPDMGEXP <- gsub("\\-|\\?|\\+|2|3|4|5|6|7|8|9", "1", economy$PROPDMGEXP, ignore.case = TRUE)
@@ -58,7 +72,8 @@ economy$CROPDMGEXP <- gsub("\\?|2", "1", economy$CROPDMGEXP, ignore.case = TRUE)
 
 economy$CROPDMGEXP <- as.numeric(economy$CROPDMGEXP)
 economy$PROPDMGEXP <- as.numeric(economy$PROPDMGEXP)
-
+```
+``` {r}
 ##Combine the DMG and EXP columns
 
 eco <- economy %>% mutate(PROP = PROPDMG * PROPDMGEXP, CROP = CROPDMG * CROPDMGEXP)
@@ -69,7 +84,21 @@ ecodmg10 <- ecodmg[1:10,]
 ecodmg10
 ```
 
+## Results for Question 2
 
+A bar graph displaying the extent of damage caused by the top ten storm types.
+```{r}
+dmg <- ggplot(ecodmg10, aes(EVTYPE, TOTAL))
+dmg + geom_bar(stat = "identity", fill = "blue") + theme(axis.text.x=element_text(angle=33, hjust = 1)) + labs(title = "Total Economic Damage of Property and Crops", x= "Storm Type", y = "Economic Damage ($)")
+```
+
+## Synopsis:
+
+According to the data, tornadoes cause the most total harm to people in the US,
+as well as being the leading cause of injury and death by storm.
+
+Floods, on the financial side, are the leading cause of economic damage, doing 
+the most damage in regards to both property and crops.
 
 
 
