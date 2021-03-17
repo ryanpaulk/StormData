@@ -3,8 +3,8 @@ title: "Population and Economic Effects of Storm Damage"
 author: "Ryan P"
 date: "3/10/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   fig.caption: yes
 ---
 ## Synopsis:
@@ -24,7 +24,7 @@ it very hard to condense the data. The magnitude by which "Flood" and "Tornado"
 surpass all others suggest that further processing will not change the 
 conclusions made.
 
-``` {r, echo = FALSE, cache = TRUE, message = FALSE}
+``` {r, cache = TRUE, message = FALSE}
 if(!file.exists("StormData.csv.bz2")){
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.
               csv.bz2", "StormData.csv.bz2")
